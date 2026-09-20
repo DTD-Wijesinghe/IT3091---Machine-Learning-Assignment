@@ -1,0 +1,53 @@
+{
+  "selected_model": "Gradient Boosting",
+  "features": [
+    "Crop",
+    "Season",
+    "Year",
+    "Extent",
+    "SeasonMeanTemp_C",
+    "SeasonTotalPrecip_mm",
+    "SeasonMeanWind_kmh",
+    "SeasonMeanSolar_MJm2",
+    "SeasonTotalET0_mm",
+    "PrevMonthWholesalePrice_RsKg"
+  ],
+  "targets": [
+    "Yield_t_ha",
+    "NextMonthWholesalePrice_RsKg"
+  ],
+  "train_years": [
+    2012,
+    2019
+  ],
+  "validation_years": [
+    2020,
+    2021
+  ],
+  "test_years": [
+    2022,
+    2023
+  ],
+  "season_anchor_month": {
+    "Yala": 4,
+    "Maha": 9
+  },
+  "random_state": 42,
+  "test_metrics": {
+    "Yield_t_ha": {
+      "MAE": 1.3199746269917665,
+      "RMSE": 1.746767860422914,
+      "R2": 0.8524485687844028
+    },
+    "NextMonthWholesalePrice_RsKg": {
+      "MAE": 87.88016524841888,
+      "RMSE": 114.13150254429121,
+      "R2": -0.10430329221925283
+    }
+  },
+  "data_sources": {
+    "production": "researchData.xlsx",
+    "weather": "weatherData.csv + locationData.csv",
+    "weekly_price": "Weekly Average Retail Prices of Vegi - 2012 to 2025.xlsx"
+  }
+}
