@@ -1,10 +1,9 @@
 {
-  "selected_model": "Gradient Boosting",
+  "selected_model": "Random Forest",
   "features": [
     "Crop",
     "Season",
     "Year",
-    "Extent",
     "Rainfall_3M_mm",
     "TempMean_3M_C",
     "WindSpeed_3M_kmh",
@@ -41,14 +40,14 @@
   "random_state": 42,
   "test_metrics": {
     "Yield_t_ha": {
-      "MAE": 1.3210448257115404,
-      "RMSE": 1.791249513656977,
-      "R2": 0.8448380559491326
+      "MAE": 1.3449710412967444,
+      "RMSE": 1.9119066418745092,
+      "R2": 0.8232308778540295
     },
     "NextMonthWholesalePrice_RsKg": {
-      "MAE": 86.9521995479668,
-      "RMSE": 113.23305994273909,
-      "R2": -0.08698558433683057
+      "MAE": 91.99496916284404,
+      "RMSE": 121.17985850389756,
+      "R2": -0.24491064182819144
     }
   },
   "data_sources": {

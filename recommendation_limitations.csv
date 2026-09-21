@@ -1,6 +1,6 @@
 Area,Limitation_or_Note
 Weather,The model uses national aggregated weather and cannot represent every farm's microclimate.
 Production,"Yield can also depend on soil, fertilizer, irrigation, pests, disease, seed variety and farm practice."
-Market price,"Prices can change because of demand, transport costs, imports, inflation, festivals and unexpected events. Final test price R2 = -0.0870; this weakness must be stated in the report."
+Market price,"Prices can change because of demand, transport costs, imports, inflation, festivals and unexpected events. Final test price R2 = -0.2449; this weakness must be stated in the report."
 Time coverage,The final model uses the common reliable period 2012-2023.
 Decision support,Predictions support planning and should not replace farmer experience or agricultural advice.
