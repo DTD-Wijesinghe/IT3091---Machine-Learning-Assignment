@@ -1,0 +1,10 @@
+Step,Decision,Reason
+Common time period,Use 2012-2023 for the final modelling table,Both Maha and Yala have complete required data
+Production,Use Member 1 cleaned national vegetable records and calculated yield,Keeps one consistent production source
+Weather,Use only the three full months before each forecast date,Prevents future-weather leakage
+Weather places,Location IDs are checked against locationData.csv before national daily aggregation,Confirms weather locations are valid
+Price,Filter wholesale records and convert weekly prices to monthly crop prices,Matches the business target
+Price feature,Previous-month wholesale price,Available before the target month
+Price target,Next-month wholesale price,Future value to predict
+Missing values,Drop rows missing required model features or targets after alignment,No invented values
+Duplicates,Require unique Crop + Season + Year rows,Avoid duplicated modelling observations

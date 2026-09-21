@@ -1,0 +1,14 @@
+Field,Type,Meaning
+Crop,Categorical,Vegetable crop name
+Season,Categorical,Maha or Yala
+Year,Integer,"Common modelling year, 2012-2023"
+Extent,Numeric,Cultivated extent from production data
+Yield_t_ha,Numeric target,Production divided by cultivated extent
+ForecastDate,Date,Yala: 1 April; Maha: 1 September
+Rainfall_3M_mm,Numeric,Rainfall in the three complete months before ForecastDate
+TempMean_3M_C,Numeric,Mean temperature in the three complete months before ForecastDate
+WindSpeed_3M_kmh,Numeric,Mean wind speed in the three complete months before ForecastDate
+SolarRadiation_3M_MJ_m2,Numeric,Mean solar radiation in the three complete months before ForecastDate
+ET0_3M_mm,Numeric,Total ET0 in the three complete months before ForecastDate
+PrevMonthWholesalePrice_RsKg,Numeric feature,Wholesale price from the month before ForecastDate
+NextMonthWholesalePrice_RsKg,Numeric target,Wholesale price for the month after ForecastDate
