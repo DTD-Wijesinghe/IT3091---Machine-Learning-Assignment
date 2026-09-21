@@ -5,16 +5,20 @@
     "Season",
     "Year",
     "Extent",
-    "SeasonMeanTemp_C",
-    "SeasonTotalPrecip_mm",
-    "SeasonMeanWind_kmh",
-    "SeasonMeanSolar_MJm2",
-    "SeasonTotalET0_mm",
+    "Rainfall_3M_mm",
+    "TempMean_3M_C",
+    "WindSpeed_3M_kmh",
+    "SolarRadiation_3M_MJ_m2",
+    "ET0_3M_mm",
     "PrevMonthWholesalePrice_RsKg"
   ],
   "targets": [
     "Yield_t_ha",
     "NextMonthWholesalePrice_RsKg"
+  ],
+  "common_modelling_period": [
+    2012,
+    2023
   ],
   "train_years": [
     2012,
@@ -32,17 +36,19 @@
     "Yala": 4,
     "Maha": 9
   },
+  "weather_rule": "Only the three complete months before each forecast date are used.",
+  "leakage_rule": "WeatherWindowEnd must be earlier than ForecastDate.",
   "random_state": 42,
   "test_metrics": {
     "Yield_t_ha": {
-      "MAE": 1.3199746269917665,
-      "RMSE": 1.746767860422914,
-      "R2": 0.8524485687844028
+      "MAE": 1.3210448257115404,
+      "RMSE": 1.791249513656977,
+      "R2": 0.8448380559491326
     },
     "NextMonthWholesalePrice_RsKg": {
-      "MAE": 87.88016524841888,
-      "RMSE": 114.13150254429121,
-      "R2": -0.10430329221925283
+      "MAE": 86.9521995479668,
+      "RMSE": 113.23305994273909,
+      "R2": -0.08698558433683057
     }
   },
   "data_sources": {
