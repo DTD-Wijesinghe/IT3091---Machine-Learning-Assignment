@@ -1,8 +1,8 @@
 {
-  "Predicted Yield (t/ha)": 10.6,
-  "Expected Production (tonnes)": 18841.24,
-  "Predicted Next-Month Wholesale Price (Rs/kg)": 107.69,
-  "Predicted Price Change (%)": -22.14,
+  "Predicted Yield (t/ha)": 11.16,
+  "Expected Production (tonnes)": 11.16,
+  "Predicted Next-Month Wholesale Price (Rs/kg)": 107.13,
+  "Predicted Price Change (%)": -22.55,
   "Recommendation": "Caution: expected yield is reasonable/high but next-month price may fall.",
   "Decision Support Note": "Price prediction showed weak out-of-sample performance, so this recommendation is experimental decision support and should not be used alone."
 }
