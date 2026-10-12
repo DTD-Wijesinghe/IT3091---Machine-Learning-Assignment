@@ -9,7 +9,7 @@ st.set_page_config(
     page_title="AgriPlan | Sri Lankan Crop Intelligence",
     page_icon="🌱",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 st.markdown(
@@ -99,12 +99,6 @@ weekly = load_price_data()
 price_model = load_model(PRICE_MODEL)
 yield_ready = YIELD_DATA.exists() and YIELD_MODEL.exists()
 yield_data = load_yield_data() if yield_ready else None
-
-with st.sidebar:
-    st.markdown("### Planning inputs")
-    st.caption("Use the forecast pages to choose a crop and enter market or field information.")
-    st.markdown("**Live models**")
-    st.caption("Weekly wholesale price · Seasonal crop yield")
 
 price_crops = sorted(weekly["Crop"].dropna().unique())
 default_crop = price_crops[0]
