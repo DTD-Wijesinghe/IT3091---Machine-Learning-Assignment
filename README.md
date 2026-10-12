@@ -11,7 +11,7 @@ The price dataset uses one crop-date observation from the Colombo/Pettah daily w
 
 The yield dataset uses one district-crop-season-year production observation matched to a district weather location and a three-month pre-forecast weather window. The final dataset contains 15,698 genuine labelled observations.
 
-See `Revised Outputs/record_counts.csv` for the auditable processing counts and `Revised Outputs/model_metrics.csv` for the executed model comparisons.
+See `evidence/record_counts.csv` for the auditable processing counts and `evidence/model_metrics.csv` for the executed model comparisons.
 
 ## Reproduce the revised pipeline
 

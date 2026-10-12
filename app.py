@@ -6,19 +6,20 @@ import streamlit as st
 
 
 BASE = Path(__file__).resolve().parent
-OUT = BASE / "Revised Outputs"
+DATA = BASE / "data" / "preprocessed"
+MODELS = BASE / "models"
 
 
 @st.cache_data
 def load_data():
-    price = pd.read_csv(OUT / "price_next_week_dataset.csv", parse_dates=["Date", "NextWeekStart"])
-    yield_data = pd.read_csv(OUT / "yield_dataset.csv", parse_dates=["ForecastDate"])
+    price = pd.read_csv(DATA / "colombo_weekly_prices_preprocessed.csv", parse_dates=["Date", "NextWeekStart"])
+    yield_data = pd.read_csv(DATA / "crop_yield_preprocessed.csv", parse_dates=["ForecastDate"])
     return price, yield_data
 
 
 @st.cache_resource
 def load_models():
-    return joblib.load(OUT / "price_model.joblib"), joblib.load(OUT / "yield_model.joblib")
+    return joblib.load(MODELS / "wholesale_price_model.joblib"), joblib.load(MODELS / "crop_yield_model.joblib")
 
 
 st.set_page_config(page_title="Sri Lankan Crop Decision Support", page_icon="🌱", layout="wide")

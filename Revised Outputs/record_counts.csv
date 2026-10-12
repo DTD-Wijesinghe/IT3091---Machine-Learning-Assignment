@@ -1,3 +1,0 @@
-Task,Original_records,Valid_source_records,After_cleaning,After_preprocessing,Final_usable_labelled_records,train,validation,test,selected_model
-Price,47886,42056,42056,39377,39377,9270,7320,22787,Gradient Boosting
-Yield,94755,16626,15698,15698,15698,9620,2982,3096,Random Forest
