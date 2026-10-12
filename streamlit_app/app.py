@@ -85,20 +85,13 @@ yield_data = load_yield_data() if yield_ready else None
 
 with st.sidebar:
     st.markdown("### Planning inputs")
-    st.caption("Choose a crop and enter the latest field or market information.")
-    price_crops = sorted(weekly["Crop"].dropna().unique())
-    crop = st.selectbox("Crop", price_crops)
-    crop_rows = weekly[weekly["Crop"] == crop].sort_values("WeekDate")
-    latest = crop_rows.dropna(subset=["PreviousWeekWholesalePrice_RsKg"]).iloc[-1]
-    forecast_date = st.date_input("Forecast week", value=latest["WeekDate"].date())
-    current_price = st.number_input(
-        "Current wholesale price (Rs/kg)", min_value=0.0,
-        value=float(latest["WholesalePrice_RsKg"]), step=1.0,
-    )
-    previous_price = st.number_input(
-        "Previous-week price (Rs/kg)", min_value=0.0,
-        value=float(latest["PreviousWeekWholesalePrice_RsKg"]), step=1.0,
-    )
+    st.caption("Use the forecast pages to choose a crop and enter market or field information.")
+    st.markdown("**Live models**")
+    st.caption("Weekly wholesale price · Seasonal crop yield")
+
+price_crops = sorted(weekly["Crop"].dropna().unique())
+default_crop = price_crops[0]
+crop_rows = weekly[weekly["Crop"] == default_crop].sort_values("WeekDate")
 
 st.markdown("<div class='section-label'>Decision support dashboard</div>", unsafe_allow_html=True)
 st.subheader("Market and yield outlook")
@@ -129,6 +122,22 @@ with overview_tab:
 
 with price_tab:
     st.write("Estimate the next weekly Colombo wholesale price using the current and previous price signals.")
+    crop = st.selectbox("Forecast crop", price_crops, index=price_crops.index(default_crop), key="forecast_crop")
+    selected_crop_rows = weekly[weekly["Crop"] == crop].sort_values("WeekDate")
+    latest = selected_crop_rows.dropna(subset=["PreviousWeekWholesalePrice_RsKg"]).iloc[-1]
+    input_one, input_two, input_three = st.columns(3)
+    with input_one:
+        forecast_date = st.date_input("Forecast week", value=latest["WeekDate"].date(), key="forecast_week")
+    with input_two:
+        current_price = st.number_input(
+            "Current wholesale price (Rs/kg)", min_value=0.0,
+            value=float(latest["WholesalePrice_RsKg"]), step=1.0, key="current_price",
+        )
+    with input_three:
+        previous_price = st.number_input(
+            "Previous-week price (Rs/kg)", min_value=0.0,
+            value=float(latest["PreviousWeekWholesalePrice_RsKg"]), step=1.0, key="previous_price",
+        )
     if st.button("Predict next-week price", type="primary", key="price_button"):
         date = pd.Timestamp(forecast_date)
         features = pd.DataFrame([{
