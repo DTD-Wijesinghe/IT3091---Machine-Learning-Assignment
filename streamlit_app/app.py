@@ -15,16 +15,32 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    .stApp { background: #f5f8f4; }
+    .stApp { background: #f5f8f4; color: #173026; }
     [data-testid="stHeader"] { background: rgba(245,248,244,0.9); }
+    .stApp p, .stApp label, .stApp li,
+    .stApp [data-testid="stMarkdownContainer"] { color: #173026; }
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4 { color: #0b5d3b; }
     .hero { padding: 1.4rem 1.6rem; border-radius: 18px; color: white;
             background: linear-gradient(120deg, #0b5d3b, #2f8f5b 62%, #74b84a); }
+    .hero h1, .hero p { color: white !important; }
     .hero h1 { margin: 0; font-size: 2.25rem; }
     .hero p { margin: .5rem 0 0; opacity: .9; font-size: 1.05rem; }
     .section-label { color: #2f8f5b; font-weight: 700; letter-spacing: .04em;
                      text-transform: uppercase; font-size: .78rem; }
     div[data-testid="stMetric"] { background: white; border: 1px solid #dce8dc;
                                     padding: 1rem; border-radius: 14px; }
+    div[data-testid="stMetric"] label,
+    div[data-testid="stMetric"] [data-testid="stMetricLabel"],
+    div[data-testid="stMetric"] [data-testid="stMetricValue"],
+    div[data-testid="stMetric"] [data-testid="stMetricDelta"] { color: #173026 !important; }
+    .stTabs [data-baseweb="tab"] { color: #24543b !important; }
+    .stTabs [aria-selected="true"] { color: #0b5d3b !important; }
+    .stButton > button { background: #0b7a4b; color: white !important;
+                         border: 0; border-radius: 9px; font-weight: 700; }
+    .stButton > button:hover { background: #095c39; color: white !important; }
+    [data-testid="stSidebar"] { background: #edf5ed; }
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] span { color: #173026 !important; }
     </style>
     """,
     unsafe_allow_html=True,
