@@ -1,66 +1,41 @@
-# Crop Planning Forecast
+# Crop and Colombo Price Decision Support
 
-Streamlit dashboard built around the supplied `final_multioutput_model.joblib` artifact.
+This revised IT3091 project contains two separate, leakage-safe regression modules in one Streamlit application:
 
-## Run locally
+1. Colombo next-week wholesale price prediction.
+2. District-level crop yield prediction.
 
-In PowerShell, activate the project environment before running Streamlit:
+## Data units and counts
+
+The price dataset uses one crop-date observation from the Colombo/Pettah daily wholesale workbook. The target is the mean wholesale price in the following calendar week. The final dataset contains 39,377 genuine labelled observations.
+
+The yield dataset uses one district-crop-season-year production observation matched to a district weather location and a three-month pre-forecast weather window. The final dataset contains 15,698 genuine labelled observations.
+
+See `Revised Outputs/record_counts.csv` for the auditable processing counts and `Revised Outputs/model_metrics.csv` for the executed model comparisons.
+
+## Reproduce the revised pipeline
+
+From PowerShell, create an environment with Python 3.12 and install `requirements.txt`. Then run:
 
 ```powershell
-cd "C:\Users\D.T.D.Wijesinghe\Documents\Codex\2026-09-21\17-build-it-in-this-order\repo"
-.venv\Scripts\Activate.ps1
+python scripts/revised_pipeline.py `
+  --repo . `
+  --daily-price "C:\path\to\2018-2025 Daily Wholesale Prices(Colombo).xlsx" `
+  --output "Revised Outputs"
+```
+
+The script writes both processed CSV datasets, trained pipelines, metadata, metrics, and record-count evidence.
+
+## Run Streamlit
+
+```powershell
 streamlit run app.py
 ```
 
-If `.venv` does not exist yet, create it with Python 3.12 and install the dependencies:
+The price module is historical-data-backed. The supplied daily Colombo workbook ends in 2025, so the app displays a data-freshness warning rather than presenting a historical backtest as a live October 2026 quote.
 
-```powershell
-py -3.12 -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-streamlit run app.py
-```
+## Evaluation summary
 
-Running `streamlit run app.py` before activating `.venv` can produce `'streamlit' is not recognized` because Streamlit is not installed globally.
+The revised price model selected Gradient Boosting and achieved test R² of approximately 0.36, outperforming the simple persistence baseline in the executed test. The revised yield model selected Random Forest and achieved test R² of approximately 0.12, also outperforming its median baseline. These results are reported honestly and should not be interpreted as guaranteed commercial forecasts.
 
-The saved model was serialized with scikit-learn 1.6.1, so the requirements file pins that version for reliable loading.
-
-## Push the app to GitHub
-
-The working folder was created from a ZIP download, so it has no `.git` history. The safest way to publish the changes is to clone the existing repository and copy the app files into that clone:
-
-```powershell
-cd "C:\Users\D.T.D.Wijesinghe\Documents\Codex\2026-09-21\17-build-it-in-this-order"
-git clone https://github.com/DTD-Wijesinghe/IT3091---Machine-Learning-Assignment.git repo-publish
-Copy-Item "repo\app.py","repo\predictor.py","repo\test_predictor.py","repo\requirements.txt","repo\README.md","repo\.gitignore" "repo-publish" -Force
-New-Item -ItemType Directory -Force "repo-publish\.streamlit" | Out-Null
-Copy-Item "repo\.streamlit\config.toml" "repo-publish\.streamlit\config.toml" -Force
-cd repo-publish
-git add app.py predictor.py test_predictor.py requirements.txt README.md .gitignore .streamlit/config.toml
-git commit -m "Add crop planning Streamlit dashboard"
-git push origin main
-```
-
-The existing repository already contains the model and preprocessed datasets, so they do not need to be copied again.
-
-## Deploy on Streamlit Community Cloud
-
-1. Open [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub.
-2. Click **Create app** and choose `DTD-Wijesinghe/IT3091---Machine-Learning-Assignment`.
-3. Select branch `main` and entrypoint file `app.py`.
-4. In **Advanced settings**, select Python 3.12, then deploy.
-
-Community Cloud reads `requirements.txt` from the repository and keeps the model/data files available beside `app.py`. Future pushes to `main` trigger an app update.
-
-## Implementation sequence
-
-The dashboard follows the requested sequence: Crop, Season, and Planned Area are the only user inputs. Season defaults automatically from today's date (Yala in the Yala window and Maha in the Maha window), while both Yala and Maha remain available for comparison. Crops come from the modelling dataset; historical weather and previous price are retrieved from the saved preprocessed tables; the exact nine-feature row is built before prediction; expected production and transparent recommendation logic are shown with automatic-data details and error handling.
-
-For years outside the supplied historical weather period, the app uses the same-season historical median and labels that fallback in the details panel. Known historical rows use exact year/season weather and matching-month crop price history.
-
-## Smoke test
-
-```powershell
-$env:PYTHONPATH = "."
-python test_predictor.py
-```
+The weekly Colombo/suburbs workbook remains a documented source for historical comparison. It is not concatenated with the daily workbook as if the two sources were identical measurements.

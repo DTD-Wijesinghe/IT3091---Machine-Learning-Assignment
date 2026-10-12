@@ -1,0 +1,18 @@
+{
+  "task": "yield",
+  "target": "Yield_t_ha",
+  "features": [
+    "District",
+    "CropCategory",
+    "Crop",
+    "Season",
+    "Year",
+    "Rainfall_3M_mm",
+    "TempMean_3M_C",
+    "WindSpeed_3M_kmh",
+    "SolarRadiation_3M_MJ_m2",
+    "ET0_3M_mm",
+    "WeatherDays_3M"
+  ],
+  "selected_model": "Random Forest"
+}

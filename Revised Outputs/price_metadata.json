@@ -1,0 +1,19 @@
+{
+  "task": "price",
+  "target": "NextWeekWholesalePrice_RsKg",
+  "features": [
+    "Crop",
+    "Market",
+    "Year",
+    "Month",
+    "WeekOfYear",
+    "CurrentPrice_RsKg",
+    "Lag1Price_RsKg",
+    "Lag2Price_RsKg",
+    "Lag3Price_RsKg",
+    "Rolling7Mean_RsKg",
+    "Rolling28Mean_RsKg",
+    "Rolling7Std_RsKg"
+  ],
+  "selected_model": "Gradient Boosting"
+}
