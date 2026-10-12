@@ -6,4 +6,4 @@ Each notebook starts by cloning the repository and ends by committing its own ou
 
 The first notebook prepares production data. The second adds weather features and creates the yield dataset. The third prepares Colombo next-week wholesale price data. The fourth trains the models and saves metrics and model files.
 
-Raw source files are stored in `data/raw`. Generated files are written to `data/preprocessed`, `models`, and `evidence`.
+Raw source files are stored in `Raw Datasets`. Each notebook creates its own generated folders and files after it runs.
