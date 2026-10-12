@@ -1,0 +1,7 @@
+Analysis,Observation,Interpretation
+Final modelling rows,359.0,Rows remaining after reliable alignment and required-value filtering
+Unique crops,18.0,Crops available for modelling
+Duplicate Crop+Season+Year,0.0,Must be zero
+Weather leakage rows,0.0,Must be zero
+Median yield (t/ha),11.7201,Central yield level
+Median next-month price (Rs/kg),89.0833,Central target-price level

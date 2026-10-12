@@ -1,0 +1,6 @@
+Decision,Selected_Choice,Reason
+ML task,Supervised multi-output regression,Predict yield and next-month wholesale price together
+Yala forecast date,1 April,Uses January-March weather only
+Maha forecast date,1 September,Uses June-August weather only
+Leakage prevention,WeatherWindowEnd must be earlier than ForecastDate,Future weather must never be an input
+Validation strategy,Time-based train/validation/test split,Future years are not mixed into earlier training data
