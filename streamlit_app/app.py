@@ -118,7 +118,14 @@ with overview_tab:
     overview_three.metric("Yield records", f"{len(yield_data):,}" if yield_ready else "Not generated")
     overview_four.metric("Latest price date", weekly["WeekDate"].max().strftime("%d %b %Y"))
     st.markdown("#### Selected crop price trend")
-    trend = crop_rows[["WeekDate", "WholesalePrice_RsKg"]].dropna().set_index("WeekDate")
+    overview_crop = st.selectbox(
+        "Select crop for price trend",
+        price_crops,
+        index=price_crops.index(default_crop),
+        key="overview_trend_crop",
+    )
+    overview_crop_rows = weekly[weekly["Crop"] == overview_crop].sort_values("WeekDate")
+    trend = overview_crop_rows[["WeekDate", "WholesalePrice_RsKg"]].dropna().set_index("WeekDate")
     st.line_chart(trend, y="WholesalePrice_RsKg", use_container_width=True)
     flow_one, flow_two, flow_three = st.columns(3)
     with flow_one:
