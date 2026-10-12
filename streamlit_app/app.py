@@ -22,7 +22,7 @@ st.markdown(
     .stApp p, .stApp label, .stApp li,
     .stApp [data-testid="stMarkdownContainer"] { color: #173026; }
     .stApp h1, .stApp h2, .stApp h3, .stApp h4 { color: #0b5d3b; }
-    .hero { padding: 1.55rem 1.7rem; border-radius: 22px; color: white;
+    .hero { margin-top: 2.2rem; padding: 1.55rem 1.7rem; border-radius: 22px; color: white;
             background: linear-gradient(120deg, #075936, #258b58 62%, #78bd4f);
             border: 1px solid rgba(255,255,255,.35);
             box-shadow: 0 14px 32px rgba(21, 91, 52, .18); }
