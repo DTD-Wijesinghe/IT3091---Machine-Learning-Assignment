@@ -81,6 +81,7 @@ if not PRICE_DATA.exists() or not PRICE_MODEL.exists():
 weekly = load_price_data()
 price_model = load_model(PRICE_MODEL)
 yield_ready = YIELD_DATA.exists() and YIELD_MODEL.exists()
+yield_data = load_yield_data() if yield_ready else None
 
 with st.sidebar:
     st.markdown("### Planning inputs")
@@ -101,7 +102,30 @@ with st.sidebar:
 
 st.markdown("<div class='section-label'>Decision support dashboard</div>", unsafe_allow_html=True)
 st.subheader("Market and yield outlook")
-price_tab, yield_tab, data_tab = st.tabs(["📈 Weekly price forecast", "🌾 Crop-yield forecast", "📊 Data coverage"])
+overview_tab, price_tab, yield_tab, data_tab = st.tabs([
+    "🏠 Overview", "📈 Weekly price forecast", "🌾 Crop-yield forecast", "📊 Data coverage"
+])
+
+with overview_tab:
+    st.write("A single view of the latest market coverage and agricultural planning signals.")
+    overview_one, overview_two, overview_three, overview_four = st.columns(4)
+    overview_one.metric("Weekly price records", f"{len(weekly):,}")
+    overview_two.metric("Available crops", f"{weekly['Crop'].nunique():,}")
+    overview_three.metric("Yield records", f"{len(yield_data):,}" if yield_ready else "Not generated")
+    overview_four.metric("Latest price date", weekly["WeekDate"].max().strftime("%d %b %Y"))
+    st.markdown("#### Selected crop price trend")
+    trend = crop_rows[["WeekDate", "WholesalePrice_RsKg"]].dropna().set_index("WeekDate")
+    st.line_chart(trend, y="WholesalePrice_RsKg", use_container_width=True)
+    flow_one, flow_two, flow_three = st.columns(3)
+    with flow_one:
+        st.markdown("**1 · Select inputs**")
+        st.caption("Choose a crop, season, district, hectares, and current market values.")
+    with flow_two:
+        st.markdown("**2 · Run forecasts**")
+        st.caption("Generate weekly price and season-aware yield estimates from trained models.")
+    with flow_three:
+        st.markdown("**3 · Review evidence**")
+        st.caption("Use the forecast, trends, and data coverage to support—not replace—decisions.")
 
 with price_tab:
     st.write("Estimate the next weekly Colombo wholesale price using the current and previous price signals.")
@@ -129,7 +153,6 @@ with yield_tab:
         st.warning("Run the Wijesinghe crop-yield preprocessing notebook once to create the yield dataset and model.")
     else:
         st.write("Estimate yield per hectare and expected production for the selected season and cultivated area.")
-        yield_data = load_yield_data()
         yield_crops = sorted(yield_data["Crop"].dropna().unique())
         yield_crop = st.selectbox("Yield crop", yield_crops, index=yield_crops.index(crop) if crop in yield_crops else 0)
         yield_rows = yield_data[yield_data["Crop"] == yield_crop]
@@ -160,7 +183,14 @@ with yield_tab:
             st.caption("The estimate uses crop, season, district, year, and cultivated hectares. It is a planning estimate, not a guaranteed harvest result.")
 
 with data_tab:
-    st.metric("Weekly price records", f"{len(weekly):,}")
+    data_one, data_two, data_three = st.columns(3)
+    data_one.metric("Weekly price records", f"{len(weekly):,}")
     if yield_ready:
-        st.metric("Prepared yield records", f"{len(load_yield_data()):,}")
+        data_two.metric("Prepared yield records", f"{len(yield_data):,}")
+        data_three.metric("Yield seasons", f"{yield_data['Season'].nunique():,}")
+    st.markdown("#### Recent weekly price observations")
     st.dataframe(weekly.tail(20), use_container_width=True, hide_index=True)
+    if yield_ready:
+        st.markdown("#### Average yield by season")
+        season_chart = yield_data.groupby("Season", as_index=True)["Yield_t_ha"].mean().sort_values(ascending=False)
+        st.bar_chart(season_chart, use_container_width=True)
