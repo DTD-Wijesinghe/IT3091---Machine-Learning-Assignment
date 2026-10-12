@@ -1,0 +1,21 @@
+from pathlib import Path
+import nbformat as nbf
+
+ROOT = Path(__file__).resolve().parents[1]
+NOTEBOOKS = ROOT / "notebooks"
+
+configs = {
+    "01_production_data_wijesinghe.ipynb": ("student/wijesinghe-production", "IT24100858 - Wijesinghe D.T.D", "Clean production data and prepare yield target"),
+    "02_weather_data_danthanarayana.ipynb": ("student/danthanarayana-weather", "IT24100533 - Danthanarayana D.M.R", "Add historical weather and location features"),
+    "03_price_data_jayakody.ipynb": ("student/jayakody-price", "IT24101090 - Jayakody N.D", "Prepare Colombo next-week wholesale price data"),
+    "04_model_training_gunathilake.ipynb": ("student/gunathilake-models", "IT23361690 - Gunathilake B.M.P", "Train and evaluate regression models"),
+}
+
+for filename, (branch, responsibility, message) in configs.items():
+    path = NOTEBOOKS / filename
+    nb = nbf.read(path, as_version=4)
+    setup = nbf.v4.new_code_cell(f'''# COLAB CELL 1 — run this first\n# This cell clones the current repository and creates this student's branch.\nimport os, subprocess\nfrom pathlib import Path\n\nREPO_URL = "https://github.com/DTD-Wijesinghe/IT3091---Machine-Learning-Assignment.git"\nBRANCH = "{branch}"\nSTUDENT_ROLE = "{responsibility}"\nSTUDENT_NAME = input("Enter your real GitHub display name: ").strip()\nSTUDENT_EMAIL = input("Enter your verified GitHub email: ").strip()\nCLONE_DIR = Path("/content/IT3091---Machine-Learning-Assignment")\n\nif not CLONE_DIR.exists():\n    subprocess.run(["git", "clone", REPO_URL, str(CLONE_DIR)], check=True)\nos.chdir(CLONE_DIR)\nsubprocess.run(["git", "fetch", "origin"], check=True)\nsubprocess.run(["git", "checkout", "main"], check=True)\nsubprocess.run(["git", "pull", "--ff-only", "origin", "main"], check=True)\nsubprocess.run(["git", "checkout", "-B", BRANCH], check=True)\nsubprocess.run(["git", "config", "user.name", STUDENT_NAME], check=True)\nsubprocess.run(["git", "config", "user.email", STUDENT_EMAIL], check=True)\nprint("Prepared", BRANCH, "for", STUDENT_ROLE)\nprint("Important: name/email set the commit author only; GitHub authentication is still required before push.")\n''')
+    finish = nbf.v4.new_code_cell(f'''# COLAB FINAL CELL — review before running\n# This pushes only this student's branch. Do not use another student's account.\nimport subprocess\n\nprint(subprocess.run(["git", "status", "--short"], capture_output=True, text=True).stdout)\nsubprocess.run(["git", "add", "notebooks/{filename}"], check=True)\nsubprocess.run(["git", "commit", "-m", "{message}"], check=False)\nprint("Authenticate with the {responsibility} GitHub account if Git requests it.")\nsubprocess.run(["git", "push", "--set-upstream", "origin", BRANCH], check=True)\nprint("Branch pushed:", BRANCH)\n''')
+    nb.cells = [setup] + nb.cells + [finish]
+    nbf.write(nb, path)
+    print("Updated", path)
