@@ -1,4 +1,6 @@
 from pathlib import Path
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import joblib
 import pandas as pd
@@ -70,18 +72,23 @@ YIELD_DATA = ROOT / "Wijesinghe.D.T.D-Crop Yield Preprocessing" / "wijesinghe_yi
 YIELD_MODEL = ROOT / "Wijesinghe.D.T.D-Crop Yield Outputs" / "wijesinghe_yield_model.joblib"
 
 
+def file_version(path):
+    stat = path.stat()
+    return stat.st_size, stat.st_mtime_ns
+
+
 @st.cache_data
-def load_price_data():
+def load_price_data(version):
     return pd.read_csv(PRICE_DATA, parse_dates=["WeekDate"])
 
 
 @st.cache_data
-def load_yield_data():
+def load_yield_data(version):
     return pd.read_csv(YIELD_DATA)
 
 
 @st.cache_resource
-def load_model(path):
+def load_model(path, version):
     return joblib.load(path)
 
 
@@ -95,14 +102,23 @@ if not PRICE_DATA.exists() or not PRICE_MODEL.exists():
     st.error("The weekly price dataset or model is missing from the repository.")
     st.stop()
 
-weekly = load_price_data()
-price_model = load_model(PRICE_MODEL)
+weekly = load_price_data(file_version(PRICE_DATA))
+if weekly.empty or weekly["WeekDate"].isna().all():
+    st.error("The weekly price dataset has no valid dated observations.")
+    st.stop()
+price_model = load_model(PRICE_MODEL, file_version(PRICE_MODEL))
 yield_ready = YIELD_DATA.exists() and YIELD_MODEL.exists()
-yield_data = load_yield_data() if yield_ready else None
+yield_data = load_yield_data(file_version(YIELD_DATA)) if yield_ready else None
 
 price_crops = sorted(weekly["Crop"].dropna().unique())
+if not price_crops:
+    st.error("The weekly price dataset has no crops to forecast.")
+    st.stop()
 default_crop = price_crops[0]
-crop_rows = weekly[weekly["Crop"] == default_crop].sort_values("WeekDate")
+latest_price_date = weekly["WeekDate"].max().date()
+today = datetime.now(ZoneInfo("Asia/Colombo")).date()
+current_week = today - timedelta(days=today.weekday())
+price_data_is_old = (today - latest_price_date).days > 14
 
 st.markdown("<div class='section-label'>Decision support dashboard</div>", unsafe_allow_html=True)
 st.subheader("Market and yield outlook")
@@ -116,7 +132,12 @@ with overview_tab:
     overview_one.metric("Weekly price records", f"{len(weekly):,}")
     overview_two.metric("Available crops", f"{weekly['Crop'].nunique():,}")
     overview_three.metric("Yield records", f"{len(yield_data):,}" if yield_ready else "Not generated")
-    overview_four.metric("Latest price date", weekly["WeekDate"].max().strftime("%d %b %Y"))
+    overview_four.metric("Latest price date", latest_price_date.strftime("%d %b %Y"))
+    if price_data_is_old:
+        st.warning(
+            f"The stored prices end on {latest_price_date:%d %b %Y}. "
+            "For a current forecast, enter recent Colombo wholesale prices yourself."
+        )
     st.markdown("#### Selected crop price trend")
     overview_crop = st.selectbox(
         "Select crop for price trend",
@@ -142,38 +163,60 @@ with price_tab:
     st.write("Estimate the next weekly Colombo wholesale price using the current and previous price signals.")
     crop = st.selectbox("Forecast crop", price_crops, index=price_crops.index(default_crop), key="forecast_crop")
     selected_crop_rows = weekly[weekly["Crop"] == crop].sort_values("WeekDate")
-    latest = selected_crop_rows.dropna(subset=["PreviousWeekWholesalePrice_RsKg"]).iloc[-1]
+    available_rows = selected_crop_rows.dropna(subset=["PreviousWeekWholesalePrice_RsKg"])
+    if available_rows.empty:
+        st.error("This crop needs at least two recorded weeks for a price forecast.")
+        st.stop()
+    latest = available_rows.iloc[-1]
+    st.caption(f"Last recorded price for {crop}: {latest['WeekDate']:%d %b %Y}.")
+    scenario = st.radio(
+        "Price inputs",
+        ["Current market prices", "Historical example"],
+        horizontal=True,
+        key="price_scenario",
+    )
+    historical = scenario == "Historical example"
+    if not historical and price_data_is_old:
+        st.warning("Enter current and previous-week prices from the same Colombo wholesale market before forecasting.")
     input_one, input_two, input_three = st.columns(3)
     with input_one:
-        forecast_date = st.date_input("Forecast week", value=latest["WeekDate"].date(), key="forecast_week")
+        forecast_date = st.date_input(
+            "Observed price week", value=latest["WeekDate"].date() if historical else current_week,
+            key=f"forecast_week_{scenario}_{crop}",
+        )
     with input_two:
         current_price = st.number_input(
             "Current wholesale price (Rs/kg)", min_value=0.0,
-            value=float(latest["WholesalePrice_RsKg"]), step=1.0, key="current_price",
+            value=float(latest["WholesalePrice_RsKg"]) if historical else 0.0,
+            step=1.0, key=f"current_price_{scenario}_{crop}",
         )
     with input_three:
         previous_price = st.number_input(
             "Previous-week price (Rs/kg)", min_value=0.0,
-            value=float(latest["PreviousWeekWholesalePrice_RsKg"]), step=1.0, key="previous_price",
+            value=float(latest["PreviousWeekWholesalePrice_RsKg"]) if historical else 0.0,
+            step=1.0, key=f"previous_price_{scenario}_{crop}",
         )
     if st.button("Predict next-week price", type="primary", key="price_button"):
-        date = pd.Timestamp(forecast_date)
-        features = pd.DataFrame([{
-            "Crop": crop,
-            "Market": "Colombo and suburbs",
-            "Year": date.year,
-            "WeekNumber": int(date.isocalendar().week),
-            "Month": date.month,
-            "WholesalePrice_RsKg": current_price,
-            "PreviousWeekWholesalePrice_RsKg": previous_price,
-        }])
-        prediction = float(price_model.predict(features)[0])
-        change = ((prediction - current_price) / current_price * 100) if current_price else None
-        one, two, three = st.columns(3)
-        one.metric("Predicted next-week price", f"Rs {prediction:,.2f}/kg")
-        two.metric("Expected movement", "Unavailable" if change is None else f"{change:+.1f}%")
-        three.metric("Forecast crop", crop)
-        st.info("Use this as decision-support evidence, not as a guaranteed market price.")
+        if current_price <= 0 or previous_price <= 0:
+            st.error("Enter both the current and previous-week wholesale prices above zero.")
+        else:
+            date = pd.Timestamp(forecast_date)
+            features = pd.DataFrame([{
+                "Crop": crop,
+                "Market": "Colombo and suburbs",
+                "Year": date.year,
+                "WeekNumber": int(date.isocalendar().week),
+                "Month": date.month,
+                "WholesalePrice_RsKg": current_price,
+                "PreviousWeekWholesalePrice_RsKg": previous_price,
+            }])
+            prediction = float(price_model.predict(features)[0])
+            change = (prediction - current_price) / current_price * 100
+            one, two, three = st.columns(3)
+            one.metric("Predicted next-week price", f"Rs {prediction:,.2f}/kg")
+            two.metric("Expected movement", f"{change:+.1f}%")
+            three.metric("Forecast crop", crop)
+            st.info("Use this as decision-support evidence, not as a guaranteed market price.")
 
 with yield_tab:
     if not yield_ready:
@@ -201,7 +244,7 @@ with yield_tab:
                 "Year": int(yield_year),
                 "Extent": hectares,
             }])
-            yield_prediction = max(0.0, float(load_model(YIELD_MODEL).predict(yield_features)[0]))
+            yield_prediction = max(0.0, float(load_model(YIELD_MODEL, file_version(YIELD_MODEL)).predict(yield_features)[0]))
             expected_production = yield_prediction * hectares
             y_left, y_mid, y_right = st.columns(3)
             y_left.metric("Predicted yield", f"{yield_prediction:,.2f} t/ha")
