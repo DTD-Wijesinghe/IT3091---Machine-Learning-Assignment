@@ -1,0 +1,6 @@
+{
+  "model": "Linear regression",
+  "target": "NextWeekWholesalePrice_RsKg",
+  "frequency": "weekly",
+  "horizon": "next week"
+}
