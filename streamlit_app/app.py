@@ -137,7 +137,8 @@ overview_tab, price_tab, yield_tab, data_tab = st.tabs([
 
 with overview_tab:
     st.write("A single view of the latest market coverage and agricultural planning signals.")
-    overview_one, overview_two, overview_three, overview_four = st.columns(4)
+    overview_one, overview_two = st.columns(2)
+    overview_three, overview_four = st.columns(2)
     overview_one.metric("Weekly price records", f"{len(weekly):,}")
     overview_two.metric("Available crops", f"{weekly['Crop'].nunique():,}")
     overview_three.metric("Yield records", f"{len(yield_data):,}" if yield_ready else "Not generated")
@@ -282,7 +283,8 @@ with data_tab:
     )
     crop_records = weekly if data_crop == "All crops" else weekly[weekly["Crop"] == data_crop]
     latest_crop_date = crop_records["WeekDate"].max()
-    data_one, data_two, data_three, data_four = st.columns(4)
+    data_one, data_two = st.columns(2)
+    data_three, data_four = st.columns(2)
     data_one.metric("All weekly price records", f"{len(weekly):,}")
     data_two.metric("Selected price records", f"{len(crop_records):,}")
     data_three.metric("Latest selected price date", latest_crop_date.strftime("%d %b %Y"))
