@@ -1,4 +1,4 @@
-# AgriPlan: weekly vegetable prices and crop yield
+# AgriPlan: weekly vegetable prices and crop yield prediction system
 
 AgriPlan is an IT3091 group project for agricultural planning in Sri Lanka. The app estimates the **next week's wholesale vegetable price for Colombo and suburbs** and **crop yield in tonnes per hectare**. A user can also enter cultivated hectares to see an estimated total production. These are planning estimates, not guaranteed market or harvest outcomes.
 
