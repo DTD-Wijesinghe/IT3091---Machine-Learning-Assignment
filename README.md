@@ -40,10 +40,4 @@ streamlit run app.py
 
 The repository pins `scikit-learn==1.6.1` because the saved model files were created with that version. Loading them under a different version may fail.
 
-## How to interpret the evaluation
 
-The weekly price model's test MAE is only slightly lower than a simple carry-forward estimate that uses the current week's price as next week's price (about **27.27 Rs/kg** on the same test rows). The current notebook ranks candidate price models on the reported test period, so that score should not be described as an untouched final holdout result. A separate validation period and a later untouched test period would give stronger evidence.
-
-The yield model uses a random row split. Because related crops, districts, and years can appear in both parts, the reported score does not establish accuracy for a future season or a new farm. The yield data include district records and `Total` season rows; users should check that the selected district and season have suitable historical coverage. The hectare input is used both as a model feature and to calculate estimated production, so describe it as a model estimate rather than a direct measurement.
-
-For the viva, distinguish the **15,598 weekly price observations** from the **15,546 modelling rows**, the **Colombo price scope** from the broader yield data, and the current separate models from any earlier monthly or combined-model experiments. Explain the model limitations alongside the metrics.
