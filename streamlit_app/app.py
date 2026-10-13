@@ -70,6 +70,15 @@ PRICE_DATA = ROOT / "Preprocessed Datasets" / "03_price_preprocessed.csv"
 PRICE_MODEL = ROOT / "weekly_price_model.joblib"
 YIELD_DATA = ROOT / "Wijesinghe.D.T.D-Crop Yield Preprocessing" / "wijesinghe_yield_preprocessed_15000plus.csv"
 YIELD_MODEL = ROOT / "Wijesinghe.D.T.D-Crop Yield Outputs" / "wijesinghe_yield_model.joblib"
+LEAFY_BUNDLE_CROPS = {"GOTUKOLA", "KANKUN", "MUKUNUWENNA"}
+
+
+def price_unit(crop_name):
+    return "Rs/bundle" if crop_name in LEAFY_BUNDLE_CROPS else "Rs/kg"
+
+
+def price_quantity(crop_name):
+    return "bundle" if crop_name in LEAFY_BUNDLE_CROPS else "kg"
 
 
 def file_version(path):
@@ -146,8 +155,14 @@ with overview_tab:
         key="overview_trend_crop",
     )
     overview_crop_rows = weekly[weekly["Crop"] == overview_crop].sort_values("WeekDate")
-    trend = overview_crop_rows[["WeekDate", "WholesalePrice_RsKg"]].dropna().set_index("WeekDate")
-    st.line_chart(trend, y="WholesalePrice_RsKg", use_container_width=True)
+    trend_label = f"Wholesale price ({price_unit(overview_crop)})"
+    trend = (
+        overview_crop_rows[["WeekDate", "WholesalePrice_RsKg"]]
+        .dropna()
+        .set_index("WeekDate")
+        .rename(columns={"WholesalePrice_RsKg": trend_label})
+    )
+    st.line_chart(trend, y=trend_label, width="stretch")
     flow_one, flow_two, flow_three = st.columns(3)
     with flow_one:
         st.markdown("**1 · Select inputs**")
@@ -168,7 +183,9 @@ with price_tab:
         st.error("This crop needs at least two recorded weeks for a price forecast.")
         st.stop()
     latest = available_rows.iloc[-1]
-    st.caption(f"Last recorded price for {crop}: {latest['WeekDate']:%d %b %Y}.")
+    unit = price_unit(crop)
+    quantity = price_quantity(crop)
+    st.caption(f"Last recorded price for {crop}: {latest['WeekDate']:%d %b %Y} ({unit}).")
     scenario = st.radio(
         "Price inputs",
         ["Current market prices", "Historical example"],
@@ -186,16 +203,17 @@ with price_tab:
         )
     with input_two:
         current_price = st.number_input(
-            "Current wholesale price (Rs/kg)", min_value=0.0,
+            f"Current wholesale price ({unit})", min_value=0.0,
             value=float(latest["WholesalePrice_RsKg"]) if historical else 0.0,
             step=1.0, key=f"current_price_{scenario}_{crop}",
         )
     with input_three:
         previous_price = st.number_input(
-            "Previous-week price (Rs/kg)", min_value=0.0,
+            f"Previous-week price ({unit})", min_value=0.0,
             value=float(latest["PreviousWeekWholesalePrice_RsKg"]) if historical else 0.0,
             step=1.0, key=f"previous_price_{scenario}_{crop}",
         )
+    st.caption("Training pairs use the next recorded price; a missing week can make that interval longer than seven days.")
     if st.button("Predict next-week price", type="primary", key="price_button"):
         if current_price <= 0 or previous_price <= 0:
             st.error("Enter both the current and previous-week wholesale prices above zero.")
@@ -213,7 +231,7 @@ with price_tab:
             prediction = float(price_model.predict(features)[0])
             change = (prediction - current_price) / current_price * 100
             one, two, three = st.columns(3)
-            one.metric("Predicted next-week price", f"Rs {prediction:,.2f}/kg")
+            one.metric("Predicted next-week price", f"Rs {prediction:,.2f}/{quantity}")
             two.metric("Expected movement", f"{change:+.1f}%")
             three.metric("Forecast crop", crop)
             st.info("Use this as decision-support evidence, not as a guaranteed market price.")
@@ -234,6 +252,9 @@ with yield_tab:
             hectares = st.number_input("Cultivated area (hectares)", min_value=0.01, value=1.0, step=0.5)
         with y_three:
             yield_year = st.number_input("Production year", min_value=2001, max_value=2100, value=2025, step=1)
+        latest_yield_year = int(pd.to_numeric(yield_data["Year"], errors="coerce").max())
+        if yield_year > latest_yield_year:
+            st.warning(f"The yield records end in {latest_yield_year}; a later-year estimate is an extrapolation.")
         district = st.selectbox("District", sorted(yield_data["District"].dropna().unique()))
         if st.button("Predict crop yield", type="primary", key="yield_button"):
             yield_features = pd.DataFrame([{
@@ -253,14 +274,38 @@ with yield_tab:
             st.caption("The estimate uses crop, season, district, year, and cultivated hectares. It is a planning estimate, not a guaranteed harvest result.")
 
 with data_tab:
-    data_one, data_two, data_three = st.columns(3)
-    data_one.metric("Weekly price records", f"{len(weekly):,}")
-    if yield_ready:
-        data_two.metric("Prepared yield records", f"{len(yield_data):,}")
-        data_three.metric("Yield seasons", f"{yield_data['Season'].nunique():,}")
     st.markdown("#### Recent weekly price observations")
-    st.dataframe(weekly.tail(20), use_container_width=True, hide_index=True)
+    data_crop = st.selectbox(
+        "Select crop to view price records",
+        ["All crops", *price_crops],
+        key="data_crop",
+    )
+    crop_records = weekly if data_crop == "All crops" else weekly[weekly["Crop"] == data_crop]
+    latest_crop_date = crop_records["WeekDate"].max()
+    data_one, data_two, data_three, data_four = st.columns(4)
+    data_one.metric("All weekly price records", f"{len(weekly):,}")
+    data_two.metric("Selected price records", f"{len(crop_records):,}")
+    data_three.metric("Latest selected price date", latest_crop_date.strftime("%d %b %Y"))
+    data_four.metric("Prepared yield records", f"{len(yield_data):,}" if yield_ready else "Not generated")
+    recent = (
+        crop_records
+        .sort_values(["WeekDate", "Crop"], ascending=[False, True])
+        .head(20)
+        [["WeekDate", "Crop", "Market", "WholesalePrice_RsKg",
+          "PreviousWeekWholesalePrice_RsKg", "NextWeekWholesalePrice_RsKg"]]
+        .copy()
+    )
+    recent.insert(3, "Price unit", recent["Crop"].map(price_unit))
+    recent["WeekDate"] = recent["WeekDate"].dt.strftime("%d %b %Y")
+    recent = recent.rename(columns={
+        "WeekDate": "Observed week",
+        "WholesalePrice_RsKg": "Observed price",
+        "PreviousWeekWholesalePrice_RsKg": "Previous recorded price",
+        "NextWeekWholesalePrice_RsKg": "Following recorded price",
+    })
+    st.caption("Showing the 20 newest stored observations for the selected crop or all crops. Some leafy vegetables are priced per bundle.")
+    st.dataframe(recent, width="stretch", hide_index=True)
     if yield_ready:
         st.markdown("#### Average yield by season")
         season_chart = yield_data.groupby("Season", as_index=True)["Yield_t_ha"].mean().sort_values(ascending=False)
-        st.bar_chart(season_chart, use_container_width=True)
+        st.bar_chart(season_chart, width="stretch")
