@@ -1,0 +1,2 @@
+Crop,CropCategory,Season,DistrictForExistingModel,ForecastYear,PlannedExtent_ha,ExistingModel_PredictedYield_t_ha,NationalHistoricalAverageYield_t_ha,HistoricalYearsUsed,HistoryFirstYear,HistoryLastYear,HistoricalReferenceType
+Winged Bean,Low Country Vegetable,Yala,National Total,2026,34.9,10.225758953892067,9.377185459962092,12,2014,2025,Arithmetic mean of prior National Total records; not an ML prediction
