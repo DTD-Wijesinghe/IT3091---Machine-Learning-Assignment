@@ -1,0 +1,2 @@
+Crop,CropCategory,Season,District,ForecastYear,PlannedExtent_ha,ExistingModel_PredictedYield_t_ha,NationalHistoricalAverageYield_t_ha,HistoricalRecordsUsed,HistoryFirstYear,HistoryLastYear,HistoricalValueIsModelFeature
+Winged Bean,Low Country Vegetable,Maha,National Total,2026,38.0,10.225758953892067,9.009058237867718,13,2013,2025,False
